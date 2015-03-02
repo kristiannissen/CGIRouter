@@ -90,6 +90,12 @@ sub render_markup {
   print $output;
 }
 
+sub render_txt {
+  my ( $self, $txt ) = @_;
+  
+  print $txt;
+}
+
 sub set_header {
   my ( $self, $content_type ) = @_;
 
