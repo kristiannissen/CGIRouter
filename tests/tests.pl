@@ -15,13 +15,25 @@ use Data::Dumper; # We will be takin a dump
 
 use CGI::Router qw/:standard/;
 
-my $router = CGI::Router->new;
+my $router = CGI::Router->new; # Create a router instance
 
 # Lets get some tests rolling
 isa_ok( $router, 'CGI::Router' );
 
 # Test we have a connect method
 can_ok( $router, 'connect' );
+
+# The following shows how you index.pl file would look in a real web app
+#
+# router->connect( 'GET /', sub {
+#   return router->render_html( 'homepage.html', {});
+# });
+# 
+# Lets add an /about-us page
+#
+# router->connect( 'GET /about-us', sub {
+#   return router->render_html( 'about-us.html', {});  
+# });
 
 # Test that a GET request responds with the expected response
 # Because we are on a command line we need to tamper with the ENV
@@ -37,7 +49,7 @@ sub get_response {
   });
   $router->run;
 }
-stdout_is( \&get_response, "Hello Kitty", "The Hello Kitty test" );
+stdout_is( \&get_response, "Hello Kitty", "The Hello Kitty test" ); # Lets capture some STDOUT put
 
 # Lets test if CGI standard methods are available
 # p() is one of the methods you can use in CGI
@@ -68,6 +80,19 @@ sub token_response {
   $router->run;
 }
 stdout_is( \&token_response, "Hello kitty", "The token test" );
+
+# Let us test some tokens
+$ENV{'REQUEST_URI'} = '/die/kitty';
+$ENV{'REQUEST_METHOD'} = 'DELETE';
+sub delete_response {
+  $router->connect( 'DELETE /die/:what', sub {
+    my $what = shift;
+
+    return $router->render_txt( "Die $what, die" );
+  });
+  $router->run;
+}
+stdout_is( \&delete_response, "Die kitty, die", "The kill a kitten test" );
 
 # Lets agree we are done testing
 done_testing();
