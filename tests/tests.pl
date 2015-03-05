@@ -20,19 +20,19 @@ my $router = CGI::Router->new; # Create a router instance
 # Lets get some tests rolling
 isa_ok( $router, 'CGI::Router' );
 
-# Test we have a connect method
-can_ok( $router, 'connect' );
+# Test we have an add_route method
+can_ok( $router, 'add_route' );
 
 # The following shows how you index.pl file would look in a real web app
 #
-# router->connect( 'GET /', sub {
+# router->add_route( 'GET', '/', sub {
 #   return router->render_html( 'homepage.html', {});
 # });
-# 
+#
 # Lets add an /about-us page
 #
-# router->connect( 'GET /about-us', sub {
-#   return router->render_html( 'about-us.html', {});  
+# router->add_route( 'GET', '/about-us', sub {
+#   return router->render_html( 'about-us.html', {});
 # });
 
 # Test that a GET request responds with the expected response
@@ -43,13 +43,14 @@ $ENV{'REQUEST_URI'} = '/hello';
 $ENV{'REQUEST_METHOD'} = 'GET';
 
 sub get_response {
-  $router->connect( 'GET /hello', sub {
-    
+  $router->add_route( 'GET', '/hello', sub {
     return $router->render_txt( "Hello Kitty" );
   });
   $router->run;
 }
-stdout_is( \&get_response, "Hello Kitty", "The Hello Kitty test" ); # Lets capture some STDOUT put
+
+# Lets capture some STDOUT put
+stdout_is( \&get_response, "Hello Kitty", "The Hello Kitty test" );
 
 # Lets test if CGI standard methods are available
 # p() is one of the methods you can use in CGI
@@ -60,8 +61,7 @@ like( p( "Hello Pussy" ), qr/[hello pussy]/, "The Hello Pussy test" );
 $ENV{'REQUEST_URI'} = '/nestpas';
 $ENV{'REQUEST_METHOD'} = 'PUT';
 sub put_response {
-  $router->connect( 'PUT /nestpas', sub {
-    
+  $router->add_route( 'PUT', '/nestpas', sub {
     return $router->render_txt( "n'est pas" );
   });
   $router->run;
@@ -72,7 +72,7 @@ stdout_is( \&put_response, "n'est pas", "The je ne parle pas française test" );
 $ENV{'REQUEST_URI'} = '/hello/kitty';
 $ENV{'REQUEST_METHOD'} = 'GET';
 sub token_response {
-  $router->connect( 'GET /hello/:what', sub {
+  $router->add_route( 'GET', '/hello/:what', sub {
     my $what = shift;
 
     return $router->render_txt( "Hello $what" );
@@ -85,7 +85,7 @@ stdout_is( \&token_response, "Hello kitty", "The token test" );
 $ENV{'REQUEST_URI'} = '/die/kitty';
 $ENV{'REQUEST_METHOD'} = 'DELETE';
 sub delete_response {
-  $router->connect( 'DELETE /die/:what', sub {
+  $router->add_route( 'DELETE', '/die/:what', sub {
     my $what = shift;
 
     return $router->render_txt( "Die $what, die" );
