@@ -6,7 +6,7 @@ use warnings;
 use parent 'CGI';
 
 use Cwd  qw(abs_path);
-use Carp qw(croak);
+use Carp qw(carp croak);
 
 use Data::Dumper;
 
@@ -29,15 +29,27 @@ sub setup {
 }
 
 sub add_route {
-    my ($self, $method, $route, $handler) = @_;
+    my ($self, $method, $route, $handler, $validations) = @_;
 
     $self->{routes} //= {};
 
     if ( ! exists $self->{routes}->{$method}->{$route} ) {
+
+	    my ($pattern, $num_tokens) = $self->build_pattern( $route );
+
+	    if ($validations && scalar @$validations != $num_tokens) {
+		    croak sprintf(
+		    	"Expected %d token validations, got %d",
+		    	scalar @$validations,
+		    	$num_tokens,
+		    );
+	    }
+
         $self->{routes}->{$method}->{$route} = {
-            handler => $handler,
-            pattern => $self->build_pattern( $route ),
-            method  => $method,
+            handler     => $handler,
+            pattern     => $pattern,
+            method      => $method,
+            validations => $validations || [],
         };
     } else {
         croak( "Similar request already exists $method $route!" );
@@ -116,6 +128,27 @@ sub set_header {
     return $self;
 }
 
+sub validate_params {
+	my ($self, $route, $params) = @_;
+
+	my $validations = $route->{'validations'};
+	my $valid = 1;
+
+	return $valid if (scalar @$validations == 0);
+
+	for my $i (0..$#$params) {
+		my $param   = $params->[$i];
+		my $pattern = $validations->[$i];
+
+		if ($param !~ /$pattern/) {
+			carp sprintf("%s does not match pattern: %s", $param, $pattern);
+			$valid = 0;
+		}
+	}
+
+	return $valid;
+}
+
 sub mapper {
     my ($self) = @_;
 
@@ -131,6 +164,11 @@ sub mapper {
         if ($uri =~ $route->{pattern}) {
             # Found the matching route
             @params = $uri =~ $route->{pattern};
+
+			if (!$self->validate_params($route, \@params)) {
+				return undef;
+			}
+
             $router = $route;
 
             # Stop looking for more routes
@@ -176,23 +214,19 @@ sub run_hooks {
 sub build_pattern {
     my ( $self, $pattern ) = @_;
 
-    # do block returns complex regex
-    $pattern = do {
-        # Replace something like /word/:token with /word/(^:([a-z]+))
-        $pattern =~ s!
-            (\:([a-z]+))
-        !
-            if ( $2 ) {
-                "([^/]+)"
-            }
-        !gex;
-
-        "^$pattern\$";
-    };
+    # Replace something like /word/:token with /word/(^:([a-z]+))
+    # and count the replacements
+    my $num_tokens = $pattern =~ s{
+    	(\:([a-z]+))
+    }{
+	    if ($2) {
+		    "([^/]+)"
+		}
+    }gex;
 
     # Hint to Perl that this is a regular expression pattern
     # Also makes it more obvious what this is for
-    return qr/$pattern/;
+    return (qr/^$pattern$/, $num_tokens);
 }
 
 sub run {
