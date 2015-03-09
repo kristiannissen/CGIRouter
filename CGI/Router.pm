@@ -35,15 +35,15 @@ sub add_route {
 
     if ( ! exists $self->{routes}->{$method}->{$route} ) {
 
-	    my ($pattern, $num_tokens) = $self->build_pattern( $route );
+        my ($pattern, $num_tokens) = $self->build_pattern( $route );
 
-	    if ($validations && scalar @$validations != $num_tokens) {
-		    croak sprintf(
-		    	"Expected %d token validations, got %d",
-		    	scalar @$validations,
-		    	$num_tokens,
-		    );
-	    }
+        if ($validations && scalar @$validations != $num_tokens) {
+            croak sprintf(
+                "Expected %d token validations, got %d",
+                scalar @$validations,
+                $num_tokens,
+            );
+        }
 
         $self->{routes}->{$method}->{$route} = {
             handler     => $handler,
@@ -129,24 +129,24 @@ sub set_header {
 }
 
 sub validate_params {
-	my ($self, $route, $params) = @_;
+    my ($self, $route, $params) = @_;
 
-	my $validations = $route->{'validations'};
-	my $valid = 1;
+    my $validations = $route->{'validations'};
+    my $valid = 1;
 
-	return $valid if (scalar @$validations == 0);
+    return $valid if (scalar @$validations == 0);
 
-	for my $i (0..$#$params) {
-		my $param   = $params->[$i];
-		my $pattern = $validations->[$i];
+    for my $i (0..$#$params) {
+        my $param   = $params->[$i];
+        my $pattern = $validations->[$i];
 
-		if ($param !~ /$pattern/) {
-			carp sprintf("%s does not match pattern: %s", $param, $pattern);
-			$valid = 0;
-		}
-	}
+        if ($param !~ /$pattern/) {
+            carp sprintf("%s does not match pattern: %s", $param, $pattern);
+            $valid = 0;
+        }
+    }
 
-	return $valid;
+    return $valid;
 }
 
 sub mapper {
@@ -165,9 +165,9 @@ sub mapper {
             # Found the matching route
             @params = $uri =~ $route->{pattern};
 
-			if (!$self->validate_params($route, \@params)) {
-				return undef;
-			}
+            if (!$self->validate_params($route, \@params)) {
+                return undef;
+            }
 
             $router = $route;
 
@@ -217,11 +217,11 @@ sub build_pattern {
     # Replace something like /word/:token with /word/(^:([a-z]+))
     # and count the replacements
     my $num_tokens = $pattern =~ s{
-    	(\:([a-z]+))
+        (\:([a-z]+))
     }{
-	    if ($2) {
-		    "([^/]+)"
-		}
+        if ($2) {
+            "([^/]+)"
+        }
     }gex;
 
     # Hint to Perl that this is a regular expression pattern
