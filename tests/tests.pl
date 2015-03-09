@@ -44,13 +44,12 @@ $ENV{'REQUEST_METHOD'} = 'GET';
 
 sub get_response {
   $router->add_route( 'GET', '/hello', sub {
+
     return $router->render_txt( "Hello Kitty" );
   });
   $router->run;
 }
-
-# Lets capture some STDOUT put
-stdout_is( \&get_response, "Hello Kitty", "The Hello Kitty test" );
+stdout_like( \&get_response, qr/Hello Kitty/, "The Hello Kitty test" );
 
 # Lets test if CGI standard methods are available
 # p() is one of the methods you can use in CGI
@@ -60,17 +59,20 @@ like( p( "Hello Pussy" ), qr/[hello pussy]/, "The Hello Pussy test" );
 # Fire a PUT request
 $ENV{'REQUEST_URI'} = '/nestpas';
 $ENV{'REQUEST_METHOD'} = 'PUT';
+
 sub put_response {
   $router->add_route( 'PUT', '/nestpas', sub {
+
     return $router->render_txt( "n'est pas" );
   });
   $router->run;
 }
-stdout_is( \&put_response, "n'est pas", "The je ne parle pas française test" );
+stdout_like( \&put_response, qr/n'est pas/, "The je ne parle pas française test" );
 
 # Let us test some tokens
 $ENV{'REQUEST_URI'} = '/hello/kitty';
 $ENV{'REQUEST_METHOD'} = 'GET';
+
 sub token_response {
   $router->add_route( 'GET', '/hello/:what', sub {
     my $what = shift;
@@ -79,11 +81,12 @@ sub token_response {
   });
   $router->run;
 }
-stdout_is( \&token_response, "Hello kitty", "The token test" );
+stdout_like( \&token_response, qr/Hello kitty/, "The token test" );
 
 # Let us test some tokens
 $ENV{'REQUEST_URI'} = '/die/kitty';
 $ENV{'REQUEST_METHOD'} = 'DELETE';
+
 sub delete_response {
   $router->add_route( 'DELETE', '/die/:what', sub {
     my $what = shift;
@@ -92,7 +95,7 @@ sub delete_response {
   });
   $router->run;
 }
-stdout_is( \&delete_response, "Die kitty, die", "The kill a kitten test" );
+stdout_like( \&delete_response, qr/Die kitty, die/, "The kill a kitten test" );
 
 # Lets agree we are done testing
 done_testing();
