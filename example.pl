@@ -8,7 +8,22 @@ my $r = CGI::Router->new();
 
 $r->add_route('GET', '/',    sub { print "index.html\n" });
 $r->add_route('GET', '/foo', sub { print "foo.html\n"}   );
-$r->add_route('GET', '/:foo/:bar', sub { my ($foo, $bar) = @_; print "I $foo\'d a $bar\n" }, ['[a-z]+', '[a-z]+']);
+$r->add_route(
+    'GET',
+    '/:foo/:bar',
+    sub {
+        my ($tokens) = @_;
+        print sprintf(
+            "I %s\'d a %s\n",
+            $tokens->{'foo'},
+            $tokens->{'bar'},
+        );
+    },
+    {
+        foo => '[a-z]+',
+        bar => '[a-z]+',
+    },
+);
 
 $ENV{'REQUEST_METHOD'} = 'GET';
 
@@ -21,6 +36,6 @@ $r->run();
 $ENV{'REQUEST_URI'} = '/splarg/wibble';
 $r->run();
 
-# This one will fail to run
+# This one will fail to match
 $ENV{'REQUEST_URI'} = '/splarg/42';
 $r->run();
