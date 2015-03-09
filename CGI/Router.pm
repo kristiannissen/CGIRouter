@@ -13,14 +13,11 @@ use Data::Dumper;
 sub setup {
     my ( $self, $config ) = @_;
 
-    $config->{db}     //= {};
-    $config->{log}    //= {};
+    
     $config->{layout} //= {};
     $config->{hooks}  //= {};
 
     $self->{config} = {
-        db     => $config->{db},
-        log    => $config->{log},
         layout => $config->{layout},
         hooks  => $config->{hooks},
     };
@@ -102,8 +99,6 @@ sub render_markup {
         $output = $master_output;
     }
 
-    $self->logger('Rendering output');
-
     $self->set_header( $template_file =~ /\.([a-z]{1,})/ );
     print $output;
 
@@ -183,26 +178,10 @@ sub mapper {
     return $router->{handler}->( @params );
 }
 
-sub logger {
-    my ( $self, $msg ) = @_;
-
-    if ( exists $self->{log} ) {
-        my $file_path = $self->{config}->{log}->{path};
-        my $level = $self->{config}->{log}->{level};
-
-        open my $fh, ">>", "$file_path/$level.log";
-        print $fh sprintf("[T:%s] [%s] - %s \n", time, $level, $msg);
-        close $fh;
-    }
-
-    return $self;
-}
-
 sub run_hooks {
     my ($self) = @_;
     my $hooks = $self->{config}->{hooks};
 
-    $self->logger( 'Running hooks before_each' );
     # Run each subroutine
     if (ref $hooks->{before_each} eq 'CODE') {
         $hooks->{before_each}->( $self );
