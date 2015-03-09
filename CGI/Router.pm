@@ -13,7 +13,6 @@ use Data::Dumper;
 sub setup {
     my ( $self, $config ) = @_;
 
-    
     $config->{layout} //= {};
     $config->{hooks}  //= {};
 
@@ -165,7 +164,7 @@ sub build_pattern {
         (\:([a-z]+))
     }{
         if ($2) {
-            "([^/]+)"
+            "?([^/]+)?"
         }
     }gex;
 

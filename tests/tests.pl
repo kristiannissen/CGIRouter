@@ -49,11 +49,12 @@ sub get_response {
   });
   $router->run;
 }
-stdout_like( \&get_response, qr/Hello Kitty/, "The Hello Kitty test" );
+# diag( "Request is $ENV{'REQUEST_URI'}" );
+stdout_like( \&get_response, qr/Hello Kitty/ );
 
 # Lets test if CGI standard methods are available
 # p() is one of the methods you can use in CGI
-like( p( "Hello Pussy" ), qr/[hello pussy]/, "The Hello Pussy test" );
+like( p( "Hello Pussy" ), qr/[hello pussy]/ );
 
 # Lets test if this router is RESTful
 # Fire a PUT request
@@ -67,7 +68,8 @@ sub put_response {
   });
   $router->run;
 }
-stdout_like( \&put_response, qr/n'est pas/, "The je ne parle pas française test" );
+# diag( "Request is $ENV{'REQUEST_URI'}" );
+stdout_like( \&put_response, qr/n'est pas/ );
 
 # Let us test some tokens
 $ENV{'REQUEST_URI'} = '/hello/kitty';
@@ -81,7 +83,8 @@ sub token_response {
   });
   $router->run;
 }
-stdout_like( \&token_response, qr/Hello kitty/, "The token test" );
+# diag( "Request is $ENV{'REQUEST_URI'}" );
+stdout_like( \&token_response, qr/Hello kitty/ );
 
 # Let us test some tokens
 $ENV{'REQUEST_URI'} = '/die/kitty';
@@ -95,7 +98,29 @@ sub delete_response {
   });
   $router->run;
 }
-stdout_like( \&delete_response, qr/Die kitty, die/, "The kill a kitten test" );
+# diag( "Request is $ENV{'REQUEST_URI'}" );
+stdout_like( \&delete_response, qr/Die kitty, die/ );
+
+# Let us test some optional tokens
+my @urls = qw(
+  /run
+  /run/forest
+);
+$ENV{'REQUEST_URI'} = $urls[rand @urls];
+$ENV{'REQUEST_METHOD'} = 'POST';
+
+sub optional_tokens_response {
+  $router->add_route( 'POST', '/run/:who', sub {
+    my $who = shift;
+
+    $who = "Forest" unless $who;
+
+    return $router->render_txt( "Actor running, $who" );
+  });
+  $router->run;
+}
+diag( "Request is $ENV{'REQUEST_URI'}" );
+stdout_like( \&optional_tokens_response, qr/Actor Running/mi );
 
 # Lets agree we are done testing
 done_testing();
