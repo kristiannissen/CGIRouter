@@ -49,7 +49,7 @@ sub add_route {
 sub render_markup {
     my ( $self, $template_file, $template_vars, $template_master ) = @_;
     my $output = '';
-    
+
     my $conf = $self->{config}->{layout};
 
     $self->set_header( $template_file =~ /\.([a-z]{1,})/ );
@@ -140,7 +140,7 @@ sub build_pattern {
             if (exists $token_regexes->{$2}) {
                 $expr = $token_regexes->{$2};
             }
-            "?(?<$2>$expr)?";
+            "(?<$2>$expr)";
         }
     }gex;
 
