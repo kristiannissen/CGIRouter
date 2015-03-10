@@ -37,7 +37,6 @@ sub add_route {
             handler     => $handler,
             pattern     => $pattern,
             method      => $method,
-            validations => $validations || {},
         };
     } else {
         croak( "Similar request already exists $method $route!" );
