@@ -45,7 +45,7 @@ $ENV{'REQUEST_METHOD'} = 'GET';
 sub get_response {
   $router->add_route( 'GET', '/hello', sub {
 
-    return $router->render_txt( "Hello Kitty" );
+    print "Hello Kitty";
   });
   $router->run;
 }
@@ -64,7 +64,7 @@ $ENV{'REQUEST_METHOD'} = 'PUT';
 sub put_response {
   $router->add_route( 'PUT', '/nestpas', sub {
 
-    return $router->render_txt( "n'est pas" );
+    print "n'est pas";
   });
   $router->run;
 }
@@ -79,7 +79,7 @@ sub token_response {
   $router->add_route( 'GET', '/hello/:what', sub {
     my $what = shift;
 
-    return $router->render_txt( "Hello $what" );
+    print "Hello $what";
   });
   $router->run;
 }
@@ -94,7 +94,7 @@ sub delete_response {
   $router->add_route( 'DELETE', '/die/:what', sub {
     my $what = shift;
 
-    return $router->render_txt( "Die $what, die" );
+    print "Die $what, die";
   });
   $router->run;
 }
@@ -115,7 +115,7 @@ sub optional_tokens_response {
 
     $who = "Forest" unless $who;
 
-    return $router->render_txt( "Actor running, $who" );
+    print "Actor running, $who";
   });
   $router->run;
 }
