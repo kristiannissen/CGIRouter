@@ -3,27 +3,48 @@ use strict;
 use warnings;
 
 use CGI::Router;
+use Data::Dumper;
 
 my $r = CGI::Router->new();
 
-$r->add_route('GET', '/',    sub { print "index.html\n" });
-$r->add_route('GET', '/foo', sub { print "foo.html\n"}   );
-$r->add_route(
-    'GET',
-    '/:foo/:bar',
-    sub {
+my $something = 0;
+
+my $callbacks = {
+    '/' => sub { print "Matched /\n" },
+    'foo' => sub { print "Matched foo\n" },
+    'with-tokens' => sub {
         my ($tokens) = @_;
-        print sprintf(
-            "I %s\'d a %s\n",
-            $tokens->{'foo'},
-            $tokens->{'bar'},
-        );
+        print "Matched with-tokens\n";
+        print Dumper $tokens;
     },
-    {
-        foo => '[a-z]+',
-        bar => '[a-z]+',
+    'with-optional' => sub {
+        my ($tokens) = @_;
+
+        print "Matched with-optional\n";
+        print Dumper $tokens;
     },
-);
+};
+
+$r->add_route('GET', '/',    $callbacks->{'/'}   )
+    ->add_route('GET', '/foo', $callbacks->{'foo'} )
+    ->add_route(
+        'GET',
+        '/with-tokens/:foo/:bar',
+        $callbacks->{'with-tokens'},
+        {
+            foo => '[a-z]+',
+            bar => '[a-z]+',
+        },
+    )
+    ->add_route(
+        'GET',
+        '/with-optional/:foo(/:bar)?',
+        $callbacks->{'with-optional'},
+        {
+            foo => '[a-z]+',
+            bar => '[a-z]+',
+        }
+    );
 
 $ENV{'REQUEST_METHOD'} = 'GET';
 
@@ -33,9 +54,25 @@ $r->run();
 $ENV{'REQUEST_URI'} = '/foo';
 $r->run();
 
-$ENV{'REQUEST_URI'} = '/splarg/wibble';
+$ENV{'REQUEST_URI'} = '/with-tokens/one/two';
+$r->run();
+
+
+# This one will fail to match
+$ENV{'REQUEST_URI'} = '/with-tokens/three';
 $r->run();
 
 # This one will fail to match
-$ENV{'REQUEST_URI'} = '/splarg/42';
+$ENV{'REQUEST_URI'} = '/with-tokens/4';
+$r->run();
+
+
+$ENV{'REQUEST_URI'} = '/with-optional/five/six';
+$r->run();
+
+$ENV{'REQUEST_URI'} = '/with-optional/seven';
+$r->run();
+
+# This one will fail to match
+$ENV{'REQUEST_URI'} = '/with-optional/8';
 $r->run();

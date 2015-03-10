@@ -102,7 +102,7 @@ sub mapper {
     }
 
     if (!$router) {
-        carp "No matching route";
+        carp "No matching route for $uri";
         return undef;
     }
 
