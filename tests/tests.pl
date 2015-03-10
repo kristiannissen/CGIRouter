@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use diagnostics;
 
 # Adjust bin
 use FindBin;
@@ -111,15 +112,12 @@ $ENV{'REQUEST_METHOD'} = 'POST';
 
 sub optional_tokens_response {
   $router->add_route( 'POST', '/run/:who', sub {
-    my $who = shift;
 
-    $who = "Forest" unless $who;
-
-    print "Actor running, $who";
+    print "Actor running";
   });
   $router->run;
 }
-diag( "Request is $ENV{'REQUEST_URI'}" );
+# diag( "Request is $ENV{'REQUEST_URI'}" );
 stdout_like( \&optional_tokens_response, qr/Actor Running/mi );
 
 # Lets agree we are done testing

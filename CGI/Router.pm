@@ -5,19 +5,14 @@ use warnings;
 
 use parent 'CGI';
 
-use Cwd  qw(abs_path);
 use Carp qw(carp croak);
-
-use Data::Dumper;
 
 sub setup {
     my ( $self, $config ) = @_;
 
-    $config->{layout} //= {};
     $config->{hooks}  //= {};
 
     $self->{config} = {
-        layout => $config->{layout},
         hooks  => $config->{hooks},
     };
 
@@ -106,7 +101,11 @@ sub mapper {
     $self->run_hooks();
 
     # Handle the route
-    return $router->{handler}->( @params );
+    if ( @params ) {
+      return $router->{handler}->( @params );
+    }
+    
+    return $router->{handler}->();
 }
 
 sub run_hooks {
