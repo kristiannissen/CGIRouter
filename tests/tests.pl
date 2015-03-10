@@ -26,13 +26,13 @@ can_ok( $router, 'add_route' );
 # The following shows how you index.pl file would look in a real web app
 #
 # router->add_route( 'GET', '/', sub {
-#   return router->render_html( 'homepage.html', {});
+#   print "This is the frontpage";
 # });
 #
 # Lets add an /about-us page
 #
 # router->add_route( 'GET', '/about-us', sub {
-#   return router->render_html( 'about-us.html', {});
+#   print "Something about us";
 # });
 
 # Test that a GET request responds with the expected response
