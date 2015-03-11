@@ -5,19 +5,14 @@ use warnings;
 
 use parent 'CGI';
 
-use Cwd  qw(abs_path);
 use Carp qw(carp croak);
-
-use Data::Dumper;
 
 sub setup {
     my ( $self, $config ) = @_;
 
-    $config->{layout} //= {};
     $config->{hooks}  //= {};
 
     $self->{config} = {
-        layout => $config->{layout},
         hooks  => $config->{hooks},
     };
 
@@ -40,40 +35,6 @@ sub add_route {
         };
     } else {
         croak( "Similar request already exists $method $route!" );
-    }
-
-    return $self;
-}
-
-sub render_markup {
-    my ( $self, $template_file, $template_vars, $template_master ) = @_;
-    my $output = '';
-
-    my $conf = $self->{config}->{layout};
-
-    $self->set_header( $template_file =~ /\.([a-z]{1,})/ );
-    print $output;
-
-    return $self;
-}
-
-sub render_txt {
-    my ( $self, $txt ) = @_;
-
-    $self->set_header( 'text' );
-    print $txt;
-
-    return $self;
-}
-
-sub set_header {
-    my ( $self, $content_type ) = @_;
-
-    if ( lc $content_type eq 'html' ) {
-        print $self->header( -type => 'text/html', -charset => 'utf-8' );
-    }
-    if ( lc $content_type eq 'text' ) {
-      print $self->header( -type => 'text/plain', -charset => 'utf-8' );
     }
 
     return $self;

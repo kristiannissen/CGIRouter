@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use diagnostics;
 
 # Adjust bin
 use FindBin;
@@ -26,13 +27,13 @@ can_ok( $router, 'add_route' );
 # The following shows how you index.pl file would look in a real web app
 #
 # router->add_route( 'GET', '/', sub {
-#   return router->render_html( 'homepage.html', {});
+#   print "This is the frontpage";
 # });
 #
 # Lets add an /about-us page
 #
 # router->add_route( 'GET', '/about-us', sub {
-#   return router->render_html( 'about-us.html', {});
+#   print "Something about us";
 # });
 
 # Test that a GET request responds with the expected response
@@ -45,7 +46,7 @@ $ENV{'REQUEST_METHOD'} = 'GET';
 sub get_response {
   $router->add_route( 'GET', '/hello', sub {
 
-    return $router->render_txt( "Hello Kitty" );
+    print "Hello Kitty";
   });
   $router->run;
 }
@@ -64,7 +65,7 @@ $ENV{'REQUEST_METHOD'} = 'PUT';
 sub put_response {
   $router->add_route( 'PUT', '/nestpas', sub {
 
-    return $router->render_txt( "n'est pas" );
+    print "n'est pas";
   });
   $router->run;
 }
@@ -79,7 +80,7 @@ sub token_response {
   $router->add_route( 'GET', '/hello/:what', sub {
     my $what = shift;
 
-    return $router->render_txt( "Hello $what" );
+    print "Hello $what";
   });
   $router->run;
 }
@@ -94,7 +95,7 @@ sub delete_response {
   $router->add_route( 'DELETE', '/die/:what', sub {
     my $what = shift;
 
-    return $router->render_txt( "Die $what, die" );
+    print "Die $what, die";
   });
   $router->run;
 }
@@ -111,15 +112,12 @@ $ENV{'REQUEST_METHOD'} = 'POST';
 
 sub optional_tokens_response {
   $router->add_route( 'POST', '/run/:who', sub {
-    my $who = shift;
 
-    $who = "Forest" unless $who;
-
-    return $router->render_txt( "Actor running, $who" );
+    print "Actor running";
   });
   $router->run;
 }
-diag( "Request is $ENV{'REQUEST_URI'}" );
+# diag( "Request is $ENV{'REQUEST_URI'}" );
 stdout_like( \&optional_tokens_response, qr/Actor Running/mi );
 
 # Lets agree we are done testing
