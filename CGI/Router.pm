@@ -20,13 +20,14 @@ sub setup {
 }
 
 sub add_route {
-    my ($self, $method, $route, $handler, $validations) = @_;
+    my ($self, $method, $route, $handler, $token_regexes) = @_;
 
+    $token_regexes  //= {};
     $self->{routes} //= {};
 
     if ( ! exists $self->{routes}->{$method}->{$route} ) {
 
-        my $pattern = $self->build_pattern( $route, $validations );
+        my $pattern = $self->build_pattern( $route, $token_regexes );
 
         $self->{routes}->{$method}->{$route} = {
             handler     => $handler,
@@ -43,8 +44,7 @@ sub add_route {
 sub mapper {
     my ($self) = @_;
 
-    my $router;
-    my $params = {};
+    my ($router, $params);
 
     my $method = $ENV{'REQUEST_METHOD'};
     my $uri    = $ENV{'REQUEST_URI'};
@@ -54,6 +54,9 @@ sub mapper {
 
         if ($uri =~ $route->{pattern}) {
             %{$params} = %+; # %LAST_PAREN_MATCH;
+            if (scalar keys %$params == 0) {
+                undef($params);
+            }
             $router = $route;
 
             # Stop looking for more routes
@@ -88,6 +91,8 @@ sub run_hooks {
 sub build_pattern {
     my ( $self, $pattern, $token_regexes ) = @_;
 
+    my $num_regexes = scalar keys $token_regexes;
+    print "Num regexes=$num_regexes\n";
     my $token_regex = '[^/]+';
 
     # Replace something like /word/:token with /word/(^:([a-z]+))
@@ -104,10 +109,10 @@ sub build_pattern {
         }
     }gex;
 
-    if ($num_tokens != scalar keys %$token_regexes) {
+    if ($num_regexes and $num_tokens != $num_regexes) {
         croak sprintf(
             "Expected %d token regexes, got %d",
-            scalar keys %$token_regexes,
+            $num_regexes,
             $num_tokens,
         );
     }
