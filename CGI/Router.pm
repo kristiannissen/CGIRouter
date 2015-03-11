@@ -91,7 +91,7 @@ sub mapper {
     foreach my $key ( keys %{ $self->{routes}->{$method} } ) {
         my $route = $self->{routes}->{$method}->{$key};
 
-        if (my @matches = $uri =~ $route->{pattern}) {
+        if ($uri =~ $route->{pattern}) {
             %{$params} = %+; # %LAST_PAREN_MATCH;
             $router = $route;
 
