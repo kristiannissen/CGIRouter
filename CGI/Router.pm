@@ -92,7 +92,6 @@ sub build_pattern {
     my ( $self, $pattern, $token_regexes ) = @_;
 
     my $num_regexes = scalar keys $token_regexes;
-    print "Num regexes=$num_regexes\n";
     my $token_regex = '[^/]+';
 
     # Replace something like /word/:token with /word/(^:([a-z]+))

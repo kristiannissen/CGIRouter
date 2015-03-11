@@ -25,8 +25,7 @@ my $callbacks = {
     },
 };
 
-$r->add_route('GET', '/opt/:foo', sub { print Dumper \@_ })
-    ->add_route('GET', '/',    $callbacks->{'/'}   )
+$r->add_route(  'GET', '/',    $callbacks->{'/'}   )
     ->add_route('GET', '/foo', $callbacks->{'foo'} )
     ->add_route(
         'GET',
