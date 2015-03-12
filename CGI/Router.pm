@@ -20,27 +20,19 @@ sub setup {
 }
 
 sub add_route {
-    my ($self, $method, $route, $handler, $validations) = @_;
+    my ($self, $method, $route, $handler, $token_regexes) = @_;
 
+    $token_regexes  //= {};
     $self->{routes} //= {};
 
     if ( ! exists $self->{routes}->{$method}->{$route} ) {
 
-        my ($pattern, $num_tokens) = $self->build_pattern( $route );
-
-        if ($validations && scalar @$validations != $num_tokens) {
-            croak sprintf(
-                "Expected %d token validations, got %d",
-                scalar @$validations,
-                $num_tokens,
-            );
-        }
+        my $pattern = $self->build_pattern( $route, $token_regexes );
 
         $self->{routes}->{$method}->{$route} = {
             handler     => $handler,
             pattern     => $pattern,
             method      => $method,
-            validations => $validations || [],
         };
     } else {
         croak( "Similar request already exists $method $route!" );
@@ -49,32 +41,10 @@ sub add_route {
     return $self;
 }
 
-sub validate_params {
-    my ($self, $route, $params) = @_;
-
-    my $validations = $route->{'validations'};
-    my $valid = 1;
-
-    return $valid if (scalar @$validations == 0);
-
-    for my $i (0..$#$params) {
-        my $param   = $params->[$i];
-        my $pattern = $validations->[$i];
-
-        if ($param !~ /$pattern/) {
-            carp sprintf("%s does not match pattern: %s", $param, $pattern);
-            $valid = 0;
-        }
-    }
-
-    return $valid;
-}
-
 sub mapper {
     my ($self) = @_;
 
-    my $router;
-    my @params;
+    my ($router, $params);
 
     my $method = $ENV{'REQUEST_METHOD'};
     my $uri    = $ENV{'REQUEST_URI'};
@@ -83,13 +53,10 @@ sub mapper {
         my $route = $self->{routes}->{$method}->{$key};
 
         if ($uri =~ $route->{pattern}) {
-            # Found the matching route
-            @params = $uri =~ $route->{pattern};
-
-            if (!$self->validate_params($route, \@params)) {
-                return undef;
+            %{$params} = %+; # %LAST_PAREN_MATCH;
+            if (scalar keys %$params == 0) {
+                undef($params);
             }
-
             $router = $route;
 
             # Stop looking for more routes
@@ -97,15 +64,16 @@ sub mapper {
         }
     }
 
+    if (!$router) {
+        carp "No matching route for $uri";
+        return undef;
+    }
+
     # Run hooks
     $self->run_hooks();
 
     # Handle the route
-    if ( @params ) {
-      return $router->{handler}->( @params );
-    }
-    
-    return $router->{handler}->();
+    return $router->{handler}->( $params );
 }
 
 sub run_hooks {
@@ -121,21 +89,36 @@ sub run_hooks {
 }
 
 sub build_pattern {
-    my ( $self, $pattern ) = @_;
+    my ( $self, $pattern, $token_regexes ) = @_;
+
+    my $num_regexes = scalar keys $token_regexes;
+    my $token_regex = '[^/]+';
 
     # Replace something like /word/:token with /word/(^:([a-z]+))
     # and count the replacements
     my $num_tokens = $pattern =~ s{
-        (\:([a-z]+))
+        (\:([a-z0-9]+))
     }{
         if ($2) {
-            "?([^/]+)?"
+            my $expr = $token_regex;
+            if (exists $token_regexes->{$2}) {
+                $expr = $token_regexes->{$2};
+            }
+            "(?<$2>$expr)";
         }
     }gex;
 
+    if ($num_regexes and $num_tokens != $num_regexes) {
+        croak sprintf(
+            "Expected %d token regexes, got %d",
+            $num_regexes,
+            $num_tokens,
+        );
+    }
+
     # Hint to Perl that this is a regular expression pattern
     # Also makes it more obvious what this is for
-    return (qr/^$pattern$/, $num_tokens);
+    return qr/^$pattern$/; #, $num_tokens);
 }
 
 sub run {

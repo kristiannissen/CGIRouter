@@ -78,7 +78,8 @@ $ENV{'REQUEST_METHOD'} = 'GET';
 
 sub token_response {
   $router->add_route( 'GET', '/hello/:what', sub {
-    my $what = shift;
+    my $params = shift;
+    my $what = $params->{'what'};
 
     print "Hello $what";
   });
@@ -93,7 +94,8 @@ $ENV{'REQUEST_METHOD'} = 'DELETE';
 
 sub delete_response {
   $router->add_route( 'DELETE', '/die/:what', sub {
-    my $what = shift;
+    my $params = shift;
+    my $what = $params->{'what'};;
 
     print "Die $what, die";
   });
@@ -111,7 +113,7 @@ $ENV{'REQUEST_URI'} = $urls[rand @urls];
 $ENV{'REQUEST_METHOD'} = 'POST';
 
 sub optional_tokens_response {
-  $router->add_route( 'POST', '/run/:who', sub {
+  $router->add_route( 'POST', '/run(/:who)?', sub {
 
     print "Actor running";
   });
