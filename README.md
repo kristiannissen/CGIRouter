@@ -15,7 +15,7 @@ website and show content!
 And here you are! A module that extends CGI and offers simple RESTful routing.
 
 ## How to use
-Since the CGIRouter extends CGI you can initialize the module like this and pass your standard CGI parameters as you usually do
+Since the CGIRouter extends CGI you can initialize the module like in the example below and pass your standard CGI parameters as you usually do
 ```Perl
 use strict;
 use warnings;
@@ -29,7 +29,7 @@ $router->add_route( 'GET', '/hello', sub {
   print "Hello Kitty";
 });
 
-$router->run(); # Executes your app so that what ever request is coming in, it gets handled
+$router->run(); # Executes your app so that what ever request is coming in gets handled
 ```
 ### Check the tests.pl file
 If you want more examples I suggest you check th https://github.com/kristiannissen/CGIRouter/blob/master/tests/tests.pl file for now.
