@@ -36,4 +36,4 @@ $router->add_route( 'GET', '/kitty', sub {
 $router->run(); # Executes your app so that what ever request is coming in gets handled
 ```
 ### Check the tests.pl file
-If you want more examples I suggest you check th https://github.com/kristiannissen/CGIRouter/blob/master/tests/tests.pl file for now.
+If you want more examples I suggest you check the https://github.com/kristiannissen/CGIRouter/blob/master/tests/tests.pl file for now.
