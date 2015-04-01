@@ -29,6 +29,10 @@ $router->add_route( 'GET', '/hello', sub {
   print "Hello Kitty";
 });
 
+$router->add_route( 'GET', '/kitty', sub {
+  print p("Hello Kitty"); # Make use of CGI to print paragraph
+});
+
 $router->run(); # Executes your app so that what ever request is coming in gets handled
 ```
 ### Check the tests.pl file
