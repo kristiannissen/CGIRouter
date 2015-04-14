@@ -20,7 +20,7 @@ sub setup {
 }
 
 sub add_route {
-    my ($self, $method, $route, $handler, $token_regexes) = @_;
+    my ( $self, $method, $route, $handler, $token_regexes ) = @_;
 
     $token_regexes  //= {};
     $self->{routes} //= {};
@@ -44,18 +44,19 @@ sub add_route {
 sub mapper {
     my ($self) = @_;
 
-    my ($router, $params);
+    my $router = undef;
+    my $params = undef;
 
     my $method = $ENV{'REQUEST_METHOD'};
-    my $uri    = $ENV{'REQUEST_URI'};
+    my $uri    = $ENV{'HTTP_X_REWRITE_URL'} || $ENV{'REQUEST_URI'};
 
     foreach my $key ( keys %{ $self->{routes}->{$method} } ) {
         my $route = $self->{routes}->{$method}->{$key};
 
-        if ($uri =~ $route->{pattern}) {
+        if ( $uri =~ $route->{pattern} ) {
             %{$params} = %+; # %LAST_PAREN_MATCH;
-            if (scalar keys %$params == 0) {
-                undef($params);
+            if ( scalar keys %$params == 0 ) {
+                undef( $params );
             }
             $router = $route;
 
@@ -64,7 +65,7 @@ sub mapper {
         }
     }
 
-    if (!$router) {
+    if ( !$router ) {
         carp "No matching route for $uri";
         return undef;
     }
@@ -77,11 +78,11 @@ sub mapper {
 }
 
 sub run_hooks {
-    my ($self) = @_;
+    my ( $self ) = @_;
     my $hooks = $self->{config}->{hooks};
 
     # Run each subroutine
-    if (ref $hooks->{before_each} eq 'CODE') {
+    if ( ref $hooks->{before_each} eq 'CODE' ) {
         $hooks->{before_each}->( $self );
     }
 
@@ -91,7 +92,7 @@ sub run_hooks {
 sub build_pattern {
     my ( $self, $pattern, $token_regexes ) = @_;
 
-    my $num_regexes = scalar keys $token_regexes;
+    my $num_regexes = scalar keys %{$token_regexes};
     my $token_regex = '[^/]+';
 
     # Replace something like /word/:token with /word/(^:([a-z]+))
@@ -108,7 +109,7 @@ sub build_pattern {
         }
     }gex;
 
-    if ($num_regexes and $num_tokens != $num_regexes) {
+    if ( $num_regexes and $num_tokens != $num_regexes ) {
         croak sprintf(
             "Expected %d token regexes, got %d",
             $num_regexes,
@@ -122,7 +123,7 @@ sub build_pattern {
 }
 
 sub run {
-    my ($self) = @_;
+    my ( $self ) = @_;
 
     return $self->mapper();
 }
