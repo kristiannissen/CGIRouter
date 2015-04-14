@@ -14,7 +14,7 @@ use Test::Output;
 
 use Data::Dumper; # We will be takin a dump
 
-use CGI::Router qw/:standard/;
+use CGI::Router qw/:standard flash/;
 
 my $router = CGI::Router->new; # Create a router instance
 
